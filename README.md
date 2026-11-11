@@ -36,6 +36,16 @@
 
 ## 🚀 快速开始
 
+### 方式零：直接下载发布包（最省事）
+
+不用装 Git、不用 Python 之外的任何东西：
+
+1. 打开 [Releases](https://github.com/yunjuanyunshu114-byte/antigravity/releases/latest)
+2. 下载 `antigravity-zh-v1.4.0.zip` 并解压
+3. 双击 `install-windows.bat`
+
+**建议把这个 zip 留在硬盘上**——客户端每次自动更新后，双击一次就能恢复汉化。
+
 ### 方式一：一键脚本（推荐，Windows）
 
 1. 完全退出 Antigravity（托盘图标也要退出）
