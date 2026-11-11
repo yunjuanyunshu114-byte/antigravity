@@ -20,6 +20,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -234,6 +235,13 @@ def patch_tray(tmp):
     old_label = "countItem.label = count > 0 ? `${count} active agents` : 'No agents running';"
     old_label_2 = "countItem.label = count > 0 ? `${count} active agents` : \"No agents running\";"
     new_label = "countItem.label = count > 0 ? `${count} 个智能体运行中` : '没有智能体在运行';"
+    # v2.24+ 改成了多行拼接写法：
+    #   (count > 0 ? `${count}` : 'No') + ' agent' + (count === 1 ? '' : 's') + ' running'
+    new_label_v25 = "countItem.label = count > 0 ? `${count} 个智能体运行中` : '没有智能体在运行';"
+    new_label_pattern = re.compile(
+        r"countItem\.label\s*=\s*\(count > 0 \? `\$\{count\}` : 'No'\)\s*"
+        r"\+\s*' agent'\s*\+\s*\(count === 1 \? '' : 's'\)\s*\+\s*' running';"
+    )
     changed = False
     if old_template in content:
         content = content.replace(old_template, new_template)
@@ -243,6 +251,9 @@ def patch_tray(tmp):
         changed = True
     elif old_label_2 in content:
         content = content.replace(old_label_2, new_label)
+        changed = True
+    elif new_label_pattern.search(content):
+        content = new_label_pattern.sub(new_label_v25, content, count=1)
         changed = True
     if changed:
         with open(tray_path, "w", encoding="utf-8") as f:
@@ -301,6 +312,18 @@ def patch_loading_overlay(tmp):
         with open(overlay_path, "w", encoding="utf-8") as f:
             f.write(content)
         print("[OK] 注入 加载画面翻译: loadingOverlay.js")
+        return
+    # v2.29+ 的加载画面只有 logo，没有文字节点；在 logo 下方补一行中文提示。
+    svg_end = "</svg>"
+    if svg_end in content:
+        css_anchor = "  @keyframes logo-pulse {"
+        text_css = "  .text { margin-top: 16px; font-size: 14px; letter-spacing: 0.02em; opacity: 0.7; }\n"
+        if ".text {" not in content and css_anchor in content:
+            content = content.replace(css_anchor, text_css + css_anchor, 1)
+        content = content.replace(svg_end, svg_end + "\n  " + new, 1)
+        with open(overlay_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        print("[OK] 注入 加载画面翻译: loadingOverlay.js")
     else:
         print("[!] loadingOverlay.js 钩子未匹配，跳过")
 
@@ -310,6 +333,7 @@ const menuTranslationMap = {
   'File': '文件',
   'Edit': '编辑',
   'View': '视图',
+  'Workspace': '工作区',
   'Window': '窗口',
   'Help': '帮助',
   'New Window': '新建窗口',
