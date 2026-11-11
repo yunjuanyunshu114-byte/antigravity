@@ -10,7 +10,7 @@ echo.
 
 echo [1/2] 关闭 Antigravity ...
 taskkill /IM Antigravity.exe /F >nul 2>&1
-timeout /t 2 /nobreak >nul
+ping -n 3 127.0.0.1 >nul
 
 echo [2/2] 用备份还原 ...
 set "PY="
@@ -36,6 +36,6 @@ if errorlevel 1 (
 
 echo.
 echo 完成！下次启动即为官方英文原版。
-timeout /t 3 /nobreak >nul
+ping -n 4 127.0.0.1 >nul
 endlocal
 exit /b 0

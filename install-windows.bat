@@ -10,7 +10,7 @@ echo.
 
 echo [1/3] 关闭 Antigravity ...
 taskkill /IM Antigravity.exe /F >nul 2>&1
-timeout /t 2 /nobreak >nul
+ping -n 3 127.0.0.1 >nul
 
 echo [2/3] 注入汉化补丁 ...
 set "PY="
@@ -46,13 +46,13 @@ if not defined AGY if exist "%ProgramFiles%\Antigravity\Antigravity.exe" set "AG
 if not defined AGY if exist "%ProgramFiles(x86)%\Antigravity\Antigravity.exe" set "AGY=%ProgramFiles(x86)%\Antigravity\Antigravity.exe"
 
 if defined AGY (
-  start "" "%AGY%"
+  start "" "%AGY%" >nul 2>&1
   echo 完成！Antigravity 已重新启动。
 ) else (
   echo [提示] 未在默认路径找到 Antigravity.exe，请手动启动客户端。
 )
 
 echo.
-timeout /t 3 /nobreak >nul
+ping -n 4 127.0.0.1 >nul
 endlocal
 exit /b 0

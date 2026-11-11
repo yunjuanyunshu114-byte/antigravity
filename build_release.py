@@ -114,9 +114,14 @@ def main():
         shutil.rmtree(tmp, ignore_errors=True)
 
     size = os.path.getsize(out_path)
+    digest = sha256(out_path)
+    checksum_path = out_path + ".sha256"
+    with open(checksum_path, "w", encoding="utf-8", newline="\n") as f:
+        f.write("%s  %s\n" % (digest, os.path.basename(out_path)))
     print("[OK] 发布包: %s" % out_path)
     print("[OK] 大小: %.1f KB" % (size / 1024.0))
-    print("[OK] SHA256: %s" % sha256(out_path))
+    print("[OK] SHA256: %s" % digest)
+    print("[OK] 校验文件: %s" % checksum_path)
     print("[TIP] 解压后双击 install-windows.bat 即可安装；客户端更新后重复此步骤即可恢复汉化。")
 
 
