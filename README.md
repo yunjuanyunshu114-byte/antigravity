@@ -8,6 +8,9 @@
 > ⚠️ 非官方语言包。本工具会修改本地 `app.asar`，安装前自动备份为 `app.asar.bak`，
 > 可随时用 `--restore` 还原。与 Google 及 Antigravity 官方团队无关。
 
+本仓库基于 [zhonghugo/antigravity-zh](https://github.com/zhonghugo/antigravity-zh)
+继续维护（MIT 协议），主要新增：Antigravity 2.31 适配、拆分句合并、一键安装脚本与发布打包。
+
 | 项目 | 说明 |
 | --- | --- |
 | 当前版本 | **v1.4.0** |
@@ -47,7 +50,7 @@ macOS / Linux 用 `./install-macos.sh`、`./restore-macos.sh`。
 ### 方式二：命令行
 
 ```bash
-git clone https://github.com/zhonghugo/antigravity-zh.git
+git clone https://github.com/yunjuanyunshu114-byte/antigravity.git
 cd antigravity-zh
 
 python install.py                 # 安装汉化（自动探测安装路径）
