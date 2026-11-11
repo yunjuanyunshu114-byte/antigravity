@@ -61,7 +61,7 @@ macOS / Linux 用 `./install-macos.sh`、`./restore-macos.sh`。
 
 ```bash
 git clone https://github.com/yunjuanyunshu114-byte/antigravity.git
-cd antigravity-zh
+cd antigravity
 
 python install.py                 # 安装汉化（自动探测安装路径）
 python install.py --status        # 查看当前状态（是否已注入、备份是否存在）

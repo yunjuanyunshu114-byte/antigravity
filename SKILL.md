@@ -52,7 +52,7 @@ macOS / Linux：
 
 ```bash
 git clone https://github.com/yunjuanyunshu114-byte/antigravity.git
-cd antigravity-zh
+cd antigravity
 python3 install.py                                   # 自动探测路径并安装
 python3 install.py --asar "/自定义路径/Contents/Resources/app.asar"   # 指定路径
 ```
