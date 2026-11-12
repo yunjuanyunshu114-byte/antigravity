@@ -40,7 +40,8 @@
 ### 第一步：下载插件包
 
 打开 [Releases](https://github.com/yunjuanyunshu114-byte/antigravity-zh-plugin/releases/latest)，
-下载 **`Antigravity汉化插件-v1.4.1.zip`**（约 11 MB），解压到任意位置。
+下载 **`Antigravity-zh-plugin-v1.4.1.zip`**（约 11 MB），解压到任意位置
+（解压出来的文件夹叫「Antigravity汉化插件-v1.4.1」）。
 
 > 插件包已内置 Python 运行时，**不需要 git、不需要命令行、不需要自己装 Python**。
 
@@ -278,7 +279,7 @@ antigravity-zh-plugin/
 ## 📦 打包发布
 
 ```bash
-python build_release.py           # 生成 dist/Antigravity汉化插件-v1.4.1.zip（内置 Python）
+python build_release.py           # 生成 dist/Antigravity-zh-plugin-v1.4.1.zip（内置 Python）
 python build_release.py --slim    # 不内置运行时（约 250 KB，需系统已装 Python）
 ```
 
@@ -335,7 +336,7 @@ A：双击 `还原官方原版.bat`（或 `python install.py --restore`）。
 
 ### v1.4.1（2026-11-12）
 
-* **插件化打包**：发布物改为 `Antigravity汉化插件-v1.4.1.zip`，内置 Python 运行时，
+* **插件化打包**：发布物改为 `Antigravity-zh-plugin-v1.4.1.zip`（GitHub 资产名只支持 ASCII，包内文件夹与脚本仍为中文名），内置 Python 运行时，
   解压后双击 `安装汉化插件.bat` 即可，**无需 git、无需命令行、无需自装 Python**
 * **还原双保险**：安装时除 `resources\app.asar.bak` 外，再另存一份官方原版到
   `%USERPROFILE%\.antigravity-zh\backup\`（含客户端版本、SHA256、时间）。

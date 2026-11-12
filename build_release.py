@@ -27,7 +27,8 @@ import zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-PKG_NAME = "Antigravity汉化插件"
+PKG_NAME = "Antigravity汉化插件"          # 包内文件夹名（中文）
+ZIP_NAME = "Antigravity-zh-plugin"        # 下载文件名（GitHub 资产名只支持 ASCII）
 RUNTIME_DIR = os.path.join(HERE, "runtime")
 
 # 仓库文件名 -> 包内文件名
@@ -157,7 +158,7 @@ def main():
         sys.exit("[ERR] 缺少文件: %s" % ", ".join(missing))
 
     os.makedirs(args.out, exist_ok=True)
-    out_path = os.path.join(args.out, "%s-v%s.zip" % (PKG_NAME, version))
+    out_path = os.path.join(args.out, "%s-v%s.zip" % (ZIP_NAME, version))
     root = "%s-v%s" % (PKG_NAME, version)
 
     total = 0
