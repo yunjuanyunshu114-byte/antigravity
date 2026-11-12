@@ -1,22 +1,23 @@
-# 🀄 Antigravity 汉化补丁（antigravity-zh）
+# 🀄 Antigravity 汉化插件
 
-为 **Google Antigravity** 桌面客户端（Agent Manager）注入中文界面的**零依赖**安装器。
+为 **Google Antigravity** 桌面客户端（Agent Manager）注入中文界面的**汉化插件包**。
 
-纯 Python 标准库实现，不需要 Node.js / npm / asar 工具；一键安装、一键还原，
-官方客户端自动更新后**重新双击一次**即可恢复汉化。
+解压后双击一次即可安装：不用 git、不用命令行、不用自己装 Python。
+官方客户端自动更新后，**再双击一次**就能恢复汉化。
 
 > ⚠️ 非官方语言包。本工具会修改本地 `app.asar`，安装前自动备份为 `app.asar.bak`，
-> 可随时用 `--restore` 还原。与 Google 及 Antigravity 官方团队无关。
+> 可随时用「还原官方原版」恢复。与 Google 及 Antigravity 官方团队无关。
 
 本仓库基于 [zhonghugo/antigravity-zh](https://github.com/zhonghugo/antigravity-zh)
-继续维护（MIT 协议），主要新增：Antigravity 2.31 适配、拆分句合并、一键安装脚本与发布打包。
+继续维护（MIT 协议），主要新增：Antigravity 2.31 适配、拆分句合并、
+插件式一键安装包、还原备份双保险。
 
 | 项目 | 说明 |
 | --- | --- |
-| 当前版本 | **v1.4.0** |
-| 已验证客户端 | Antigravity **2.31.0**（Windows / macOS 通用逻辑） |
+| 当前版本 | **v1.4.1** |
+| 已验证客户端 | Antigravity **2.31.2**（Windows / macOS 通用逻辑） |
 | 词典规模 | **6297 条**整句词条 + **189 条**动态正则规则 |
-| 运行环境 | Python 3.8+（仅标准库） |
+| 插件包大小 | 约 **11 MB**（Windows 版内置 Python 运行时，开箱即用） |
 | 许可证 | [MIT](LICENSE) |
 
 ---
@@ -36,35 +37,34 @@
 
 ## 🚀 快速开始
 
-### 方式零：直接下载发布包（最省事）
+### 第一步：下载插件包
 
-不用装 Git、不用 Python 之外的任何东西：
+打开 [Releases](https://github.com/yunjuanyunshu114-byte/antigravity-zh-plugin/releases/latest)，
+下载 **`Antigravity汉化插件-v1.4.1.zip`**（约 11 MB），解压到任意位置。
 
-1. 打开 [Releases](https://github.com/yunjuanyunshu114-byte/antigravity/releases/latest)
-2. 下载 `antigravity-zh-v1.4.0.zip` 并解压
-3. 双击 `install-windows.bat`
+> 插件包已内置 Python 运行时，**不需要 git、不需要命令行、不需要自己装 Python**。
 
-**建议把这个 zip 留在硬盘上**——客户端每次自动更新后，双击一次就能恢复汉化。
+### 第二步：双击安装
 
-### 方式一：一键脚本（推荐，Windows）
+1. 完全退出 Antigravity（含托盘图标；脚本也会自动关闭）
+2. 双击 **`安装汉化插件.bat`**
+3. 脚本自动完成：关闭客户端 → 注入汉化 → 重新启动
+4. 界面变成中文即安装成功
 
-1. 完全退出 Antigravity（托盘图标也要退出）
-2. 双击 `install-windows.bat`
+还原英文原版：双击 **`还原官方原版.bat`**。
 
-脚本会自动：关闭残留进程 → 注入汉化 → 重新启动客户端。
+macOS / Linux 解压后执行 `./install-macos.sh` / `./restore-macos.sh`（需系统自带 python3）。
 
-还原原版：双击 `restore-windows.bat`。
+> **建议把这个 zip 留在硬盘上**——客户端每次自动更新后，双击一次即可恢复汉化。
 
-macOS / Linux 用 `./install-macos.sh`、`./restore-macos.sh`。
-
-### 方式二：命令行
+### 给开发者：从源码运行
 
 ```bash
-git clone https://github.com/yunjuanyunshu114-byte/antigravity.git
-cd antigravity
+git clone https://github.com/yunjuanyunshu114-byte/antigravity-zh-plugin.git
+cd antigravity-zh-plugin
 
 python install.py                 # 安装汉化（自动探测安装路径）
-python install.py --status        # 查看当前状态（是否已注入、备份是否存在）
+python install.py --status        # 查看状态：是否已注入、两处备份是否在
 python install.py --restore       # 还原官方原版
 python install.py --asar "/path/to/resources/app.asar"   # 手动指定路径
 ```
@@ -78,20 +78,27 @@ python install.py --asar "/path/to/resources/app.asar"   # 手动指定路径
 
 Antigravity 每次自动更新都会用官方 `app.asar` 覆盖补丁——这是正常现象，不是装坏了。
 
-**最快的恢复方式（30 秒）：**
+**最快的恢复方式（15 秒）：**
 
-1. 打开本仓库目录（或上次解压出来的发布包目录）
-2. 双击 `install-windows.bat`
+1. 打开上次解压出来的插件包目录（或重新下载最新插件包）
+2. 双击 `安装汉化插件.bat`
    - 如果客户端正在运行，脚本会先强制关闭
    - 注入完成后自动重新启动客户端
-3. 完成。`.bak` 备份始终保留，不需要重新下载任何东西
+3. 完成。备份和词典都还在，不需要重新下载任何东西
+
+**备份是双保险的：**
+
+| 位置 | 作用 |
+| --- | --- |
+| `Antigravity\resources\app.asar.bak` | 安装时自动生成，方便就地还原 |
+| `%USERPROFILE%\.antigravity-zh\backup\app.asar.orig` | 用户目录持久备份，**客户端更新清空 resources 也不会丢** |
+
+所以即使官方更新把 `.bak` 删了，双击 `还原官方原版.bat` 依然能还原，
+绝不会出现「找不到备份」而卡住的情况。
 
 **如果词典也过期了（新版客户端出现新的英文）：**
 
-```bash
-git pull                 # 拉取最新词典
-install-windows.bat      # 重新注入
-```
+重新下载最新插件包 → 双击安装即可（词典随包更新）。
 
 **零成本增量更新（不重装）：**
 
@@ -222,7 +229,7 @@ React 会把一句话拆成多个文本节点，逐节点翻译就会得到
 
 1. 在客户端里看到未翻译的英文，先确认它是不是**整句**（React 可能拆分节点）
 2. 在 `dicts/zh_cn.json` 补一条 `"英文原文": "中文译文"`
-3. 重装一次（`install-windows.bat`）让词典进入 asar；或直接编辑
+3. 重装一次（`安装汉化插件.bat`，源码目录下为 `install-windows.bat`）让词典进入 asar；或直接编辑
    `~/.antigravity-zh/zh-CN.json` 热重载预览效果
 4. 涉及数字/日期/计数的文案，改为在 `dicts/engine.js` 的 `dynamicRules` 里加规则
 5. 提交 PR 时请附上「界面位置 + 原文 + 译文」，便于校对
@@ -246,15 +253,16 @@ React 会把一句话拆成多个文本节点，逐节点翻译就会得到
 ## 📁 项目结构
 
 ```
-antigravity-zh/
+antigravity-zh-plugin/
 ├── install.py                # 安装器：注入 / 还原 / 状态
 ├── asar.py                   # 纯 Python asar 解包与打包
-├── build_release.py          # 生成可分发的发布包（zip）
+├── build_release.py          # 生成插件包（zip + sha256）
 ├── VERSION                   # 版本号
-├── install-windows.bat       # Windows 一键安装（关进程→注入→启动）
-├── restore-windows.bat       # Windows 一键还原
+├── install-windows.bat       # 源码版一键安装（包里改名为「安装汉化插件.bat」）
+├── restore-windows.bat       # 源码版一键还原（包里改名为「还原官方原版.bat」）
 ├── install-macos.sh          # macOS / Linux 一键安装
 ├── restore-macos.sh          # macOS / Linux 一键还原
+├── runtime/                  # Windows 免安装 Python 运行时（不进 Git，打包时下载）
 ├── dicts/
 │   ├── zh_cn.json            # 6297 条整句词典
 │   └── engine.js             # DOM 翻译引擎模板（含动态规则）
@@ -270,14 +278,27 @@ antigravity-zh/
 ## 📦 打包发布
 
 ```bash
-python build_release.py
+python build_release.py           # 生成 dist/Antigravity汉化插件-v1.4.1.zip（内置 Python）
+python build_release.py --slim    # 不内置运行时（约 250 KB，需系统已装 Python）
 ```
 
-会在 `dist/` 生成 `antigravity-zh-v1.4.0.zip`，内含
-`install.py`、`asar.py`、`dicts/`、四个一键脚本、README、LICENSE。
-解压后双击 `install-windows.bat` 即可安装——**这就是下次客户端更新后最快的恢复方式**。
+插件包结构（解压即用）：
 
-脚本同时输出 zip 的 SHA256，便于校验。
+```
+Antigravity汉化插件-v1.4.1/
+├── 安装汉化插件.bat      ← 双击这个
+├── 还原官方原版.bat
+├── 使用说明.txt
+├── install.py / asar.py
+├── dicts/  docs/
+└── runtime/              ← 免安装 Python，用户机器无需任何环境
+```
+
+脚本同时输出 zip 的 SHA256 与 `.sha256` 校验文件。
+
+首次构建前若需要内置运行时，把 Windows 版
+[Python embeddable](https://www.python.org/downloads/windows/)（`python-3.12.x-embed-amd64.zip`）
+解压到仓库根目录的 `runtime/` 即可（该目录已在 `.gitignore` 中）。
 
 ---
 
@@ -287,7 +308,12 @@ python build_release.py
 A：确认是**完全退出**（含托盘）后重新启动；可用 `python install.py --status` 检查「汉化：已注入」。
 
 **Q：官方更新后汉化消失了？**
-A：正常。双击 `install-windows.bat` 重新注入即可，备份和词典都还在。
+A：正常。双击 `安装汉化插件.bat` 重新注入即可，备份和词典都还在。
+
+**Q：双击「还原官方原版.bat」提示找不到备份？**
+A：旧版才有这个问题——客户端更新会清空 `resources\` 目录，把 `.bak` 一起删掉。
+v1.4.1 起官方原版会另存一份到 `%USERPROFILE%\.antigravity-zh\backup\`，
+即使 `resources\app.asar.bak` 没了也能还原。若当前本来就是官方原版，脚本会直接提示「无需还原」。
 
 **Q：提示「应用已损坏，无法打开」（macOS）？**
 A：`sudo xattr -rd com.apple.quarantine /Applications/Antigravity.app`；
@@ -301,11 +327,24 @@ A：只改字符串与注入只读翻译层，不触碰网络请求与业务逻�
 可能违反官方服务条款，请自行评估。
 
 **Q：如何彻底恢复？**
-A：`python install.py --restore`，用 `.bak` 覆盖回官方原版。
+A：双击 `还原官方原版.bat`（或 `python install.py --restore`）。
 
 ---
 
 ## 📜 更新日志
+
+### v1.4.1（2026-11-12）
+
+* **插件化打包**：发布物改为 `Antigravity汉化插件-v1.4.1.zip`，内置 Python 运行时，
+  解压后双击 `安装汉化插件.bat` 即可，**无需 git、无需命令行、无需自装 Python**
+* **还原双保险**：安装时除 `resources\app.asar.bak` 外，再另存一份官方原版到
+  `%USERPROFILE%\.antigravity-zh\backup\`（含客户端版本、SHA256、时间）。
+  客户端更新清空 `resources\` 后依然能还原
+* **修复**：`.bak` 被更新清掉时，「还原」会直接报错退出——现在会先回退到用户目录备份；
+  若当前已是官方原版，则明确提示「无需还原」而不是报失败
+* **修复**：批处理调用 Python 时强制 UTF-8 输出，控制台不再出现乱码
+* `--status` 显示两处备份的状态与客户端版本
+* 已验证客户端 **2.31.2**
 
 ### v1.4.0（2026-11-11）
 

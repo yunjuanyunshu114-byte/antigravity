@@ -25,6 +25,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 
 # 允许 install.py 从任意工作目录运行
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -35,6 +36,13 @@ TAG = "Antigravity Chinese Translation Injection v3-full"
 ANCHOR = "  const combinedDict = Object.assign({}, coreWords, dictionary);"
 DICT_PLACEHOLDER = "__DICT_ITEMS__"
 UNPACK_PATTERNS = ["**/node_modules/chrome-devtools-mcp/**"]
+
+# 官方原版的持久备份目录。
+# 客户端自动更新会整体替换 resources/，把 app.asar.bak 一起清掉，
+# 所以这里在用户目录再留一份，保证任何时候都能还原。
+BACKUP_DIR = os.path.join(os.path.expanduser("~"), ".antigravity-zh", "backup")
+BACKUP_ASAR = os.path.join(BACKUP_DIR, "app.asar.orig")
+BACKUP_META = os.path.join(BACKUP_DIR, "meta.json")
 
 # 旧版标记（用于升级时清理）
 OLD_TAGS = ["Antigravity Chinese Translation Injection v2-extra"]
@@ -384,6 +392,45 @@ def sha256(path):
     return h.hexdigest()
 
 
+def quick_is_patched(path):
+    """快速判断 asar 是否已注入：asar 内容不压缩，直接搜标记字符串。"""
+    needle = TAG.encode("utf-8")
+    try:
+        with open(path, "rb") as f:
+            while True:
+                chunk = f.read(1 << 20)
+                if not chunk:
+                    return False
+                if needle in chunk:
+                    return True
+    except OSError:
+        return False
+
+
+def save_persistent_backup(asar_path, app_version=""):
+    """把官方原版另存到 ~/.antigravity-zh/backup，客户端更新也清不掉。"""
+    os.makedirs(BACKUP_DIR, exist_ok=True)
+    shutil.copy2(asar_path, BACKUP_ASAR)
+    meta = {
+        "app_version": app_version,
+        "size": os.path.getsize(asar_path),
+        "sha256": sha256(asar_path),
+        "saved_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+    }
+    with open(BACKUP_META, "w", encoding="utf-8") as f:
+        json.dump(meta, f, ensure_ascii=False, indent=2)
+
+
+def app_version_of(tmp):
+    """从解包出来的 package.json 读客户端版本（失败返回空串）。"""
+    p = os.path.join(tmp, "package.json")
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            return json.load(f).get("version", "")
+    except Exception:
+        return ""
+
+
 def cmd_install(asar_path, resources_dir):
     if check_app_running():
         print("[!] 检测到 Antigravity 正在运行。")
@@ -408,6 +455,7 @@ def cmd_install(asar_path, resources_dir):
         print("[*] 当前已是汉化版，跳过备份（保留官方原版 .bak）")
 
     # 2. 备份：仅当当前 asar 未被汉化（是官方版）时，才可能覆盖 .bak
+    app_version = app_version_of(tmp)
     bak = asar_path + ".bak"
     if not already:
         if not os.path.exists(bak):
@@ -418,6 +466,15 @@ def cmd_install(asar_path, resources_dir):
             print("[OK] 检测到官方版本已更新，重新备份 -> %s" % bak)
         else:
             print("[*] 已有官方备份，直接使用")
+    # 持久备份：客户端自动更新会清空 resources/，所以在用户目录再留一份
+    try:
+        if not already:
+            save_persistent_backup(asar_path, app_version)
+            print("[OK] 官方原版已另存：%s" % BACKUP_ASAR)
+        elif not os.path.exists(BACKUP_ASAR):
+            print("[i] 当前已是汉化版且没有官方备份，跳过持久备份（可用客户端修复恢复原版）")
+    except Exception as e:
+        print("[!] 持久备份失败（不影响安装）: %s" % e)
 
     # 3. 注入
     dictionary = load_dictionary()
@@ -490,16 +547,37 @@ def cmd_install(asar_path, resources_dir):
 
 def cmd_restore(asar_path, resources_dir):
     bak = asar_path + ".bak"
-    if not os.path.exists(bak):
-        sys.exit("[ERR] 没有找到备份 %s，无法还原" % bak)
-    shutil.copy2(bak, asar_path)
+    candidates = []
+    if os.path.exists(bak):
+        candidates.append(("安装目录备份", bak))
+    if os.path.exists(BACKUP_ASAR):
+        candidates.append(("用户目录备份", BACKUP_ASAR))
+
+    # 只接受「确实没被汉化」的备份，避免把补丁当原版还原回去
+    usable = [(label, p) for label, p in candidates if not quick_is_patched(p)]
+
+    if not usable:
+        if os.path.exists(asar_path) and not quick_is_patched(asar_path):
+            print("[OK] 当前 app.asar 就是官方原版（未被汉化），无需还原。")
+            print("[i] 启动 Antigravity 即为英文界面。")
+            return
+        sys.exit(
+            "[ERR] 找不到可用的官方原版备份。\n"
+            "      常见原因：客户端自动更新时清空了 resources 目录（.bak 被删）。\n"
+            "      解决办法（任选其一）：\n"
+            "        1. 重新双击「安装汉化插件.bat」——会重新生成官方原版备份；\n"
+            "        2. 在 Antigravity 里执行「重新安装 / 修复」恢复官方文件。"
+        )
+
+    label, src = usable[0]
+    shutil.copy2(src, asar_path)
     # 注意：.unpacked（chrome-devtools-mcp 等）是官方原版内容且不被汉化修改，
     # 安装/还原时均保持一致，无需删除。
     if sys.platform == "darwin":
         # resources_dir -> Contents -> Antigravity.app
         app_root = os.path.dirname(os.path.dirname(resources_dir))
         codesign_macos(app_root)
-    print("[OK] 已还原官方原版 app.asar（SHA256: %s）" % sha256(asar_path))
+    print("[OK] 已用「%s」还原官方原版（SHA256: %s）" % (label, sha256(asar_path)))
     print("[OK] 汉化已移除，请重启 Antigravity。")
 
 
@@ -510,22 +588,26 @@ def cmd_status(asar_path, resources_dir):
         return
     print("SHA256: %s" % sha256(asar_path))
     print("大小: %d bytes" % os.path.getsize(asar_path))
+    print("汉化: %s" % ("已注入" if quick_is_patched(asar_path) else "未注入（官方原版）"))
+
     bak = asar_path + ".bak"
     if os.path.exists(bak):
-        print("备份: 存在（%s）" % sha256(bak)[:16])
+        print("备份(安装目录): 存在（%s）" % sha256(bak)[:16])
     else:
-        print("备份: 无")
-    try:
-        tmp = tempfile.mkdtemp(prefix="agy_zh_st_")
-        asar.extract(asar_path, tmp)
-        preload = os.path.join(tmp, "dist", "preload.js")
-        if os.path.exists(preload):
-            with open(preload, "r", encoding="utf-8") as f:
-                c = f.read()
-            print("汉化: %s" % ("已注入 v3" if TAG in c else "未注入（原版）"))
-        shutil.rmtree(tmp, ignore_errors=True)
-    except Exception as e:
-        print("检查失败: %s" % e)
+        print("备份(安装目录): 无（客户端更新通常会清掉）")
+
+    if os.path.exists(BACKUP_ASAR):
+        extra = ""
+        try:
+            with open(BACKUP_META, "r", encoding="utf-8") as f:
+                meta = json.load(f)
+            extra = "，客户端 %s，%s" % (meta.get("app_version") or "未知版本", meta.get("saved_at", ""))
+        except Exception:
+            pass
+        print("备份(用户目录): 存在（%s%s）" % (sha256(BACKUP_ASAR)[:16], extra))
+    else:
+        print("备份(用户目录): 无")
+
 
 
 def main():

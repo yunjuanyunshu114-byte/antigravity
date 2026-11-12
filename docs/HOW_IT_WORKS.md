@@ -56,6 +56,7 @@ os.replace(staged_asar, asar_path)           # 5. 原子替换（失败自动回
 | 设计 | 解决的问题 |
 | --- | --- |
 | 首次安装把原版复制为 `app.asar.bak` | 永远有干净的还原源，多次重装不会覆盖备份 |
+| 同时另存一份到 `~/.antigravity-zh/backup/app.asar.orig` | 客户端更新会整体替换 `resources/`，把 `.bak` 一起删掉；用户目录备份不会丢 |
 | 打包到**同目录**再 `os.replace` | 避免跨盘复制中断产生损坏文件 |
 | `chrome-devtools-mcp` 保持 unpacked | 官方自带的 unpacked 模块不能被塞进 asar |
 | 锚点 + 从锚点到文件尾整体重建 | 旧版引擎残留会重复翻译，这里一并清除 |
@@ -359,7 +360,7 @@ const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
 
 1. 打开 `dicts/zh_cn.json`
 2. 插入 `"原文": "译文"`（保持文件按 key 小写排序，减少 diff 噪音）
-3. 运行 `install-windows.bat`，或直接改 `~/.antigravity-zh/zh-CN.json` 热重载预览
+3. 运行 `安装汉化插件.bat`（源码目录为 `install-windows.bat`），或直接改 `~/.antigravity-zh/zh-CN.json` 热重载预览
 
 ### 加一条动态文案
 
@@ -382,7 +383,7 @@ const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
 python -c "import json;json.load(open('dicts/zh_cn.json',encoding='utf-8'))"
 
 # 2. 重新注入（会自动重建引擎块并刷新外部词典）
-install-windows.bat
+安装汉化插件.bat        # 源码目录下为 install-windows.bat
 
 # 3. 确认已注入
 python install.py --status
