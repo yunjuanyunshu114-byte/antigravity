@@ -268,7 +268,8 @@ antigravity-zh-plugin/
 │   ├── zh_cn.json            # 6297 条整句词典
 │   └── engine.js             # DOM 翻译引擎模板（含动态规则）
 ├── docs/
-│   └── HOW_IT_WORKS.md       # 翻译机制详解（进阶阅读）
+│   ├── HOW_IT_WORKS.md       # 翻译机制详解（进阶阅读）
+│   └── PROMPT.md             # 项目复现提示词（交给 AI 从零重做）
 ├── SKILL.md                  # 供 AI 智能体调用的技能说明
 ├── README.md
 └── LICENSE                   # MIT
