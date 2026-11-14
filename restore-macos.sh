@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Antigravity 还原官方原版（macOS / Linux）
+# v1.5.0：会校验备份版本与当前客户端是否一致，不一致拒绝还原
 set -uo pipefail
 cd "$(dirname "$0")"
 
@@ -7,14 +8,6 @@ echo "============================================"
 echo "  Antigravity 还原官方原版"
 echo "============================================"
 
-echo "[1/2] 关闭 Antigravity ..."
-if [[ "$(uname)" == "Darwin" ]]; then
-  osascript -e 'quit app "Antigravity"' >/dev/null 2>&1 || true
-fi
-pkill -f "Antigravity" >/dev/null 2>&1 || true
-sleep 2
-
-echo "[2/2] 用备份还原 ..."
 PY=""
 if command -v python3 >/dev/null 2>&1; then PY="python3";
 elif command -v python >/dev/null 2>&1; then PY="python";
@@ -23,9 +16,13 @@ else
   exit 1
 fi
 
-if ! "$PY" install.py --restore; then
-  echo "[ERR] 还原失败，请查看上方错误信息。"
-  exit 1
+"$PY" install.py --restore "$@"
+code=$?
+if [ "$code" -ne 0 ]; then
+  echo "[ERR] 还原失败（退出码 $code）。"
+  echo "      退出码 4 表示没有与当前客户端版本匹配的官方备份（保护机制）。"
+  echo "      解决办法：先运行 ./install-macos.sh 生成当前版本备份，再还原。"
+  exit "$code"
 fi
 
-echo "完成！下次启动即为官方英文原版。"
+echo "[OK] 下次启动即为官方英文原版。"

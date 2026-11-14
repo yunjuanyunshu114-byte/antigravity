@@ -35,13 +35,22 @@ RUNTIME_DIR = os.path.join(HERE, "runtime")
 RENAME = {
     "install-windows.bat": "安装汉化插件.bat",
     "restore-windows.bat": "还原官方原版.bat",
+    "launch-windows.bat": "汉化并启动.bat",
+    "autorepair-on-windows.bat": "注册开机自动修复.bat",
+    "autorepair-off-windows.bat": "取消开机自动修复.bat",
+    "shortcut-windows.bat": "创建桌面快捷方式.bat",
 }
 
 INCLUDE_FILES = [
     "install-windows.bat",
     "restore-windows.bat",
+    "launch-windows.bat",
+    "autorepair-on-windows.bat",
+    "autorepair-off-windows.bat",
+    "shortcut-windows.bat",
     "install-macos.sh",
     "restore-macos.sh",
+    "launch-macos.sh",
     "install.py",
     "asar.py",
     "README.md",
@@ -50,46 +59,64 @@ INCLUDE_FILES = [
 ]
 INCLUDE_DIRS = ["dicts", "docs"]
 
-EXECUTABLES = {"install-macos.sh", "restore-macos.sh"}
+EXECUTABLES = {"install-macos.sh", "restore-macos.sh", "launch-macos.sh"}
 
-USAGE_TXT = """\
-Antigravity 汉化插件 v{version}
+USAGE_TXT = r"""Antigravity 汉化插件 v{version}
 ================================
 
 这是给 Google Antigravity 桌面客户端用的中文界面插件包。
-不需要 git，不需要自己装 Python——解压后双击就能用。
+不需要 git、不需要安装 Python——解压后双击就能用。
 
-一、安装（约 15 秒）
+零、开始之前（重要）
 --------------------
-1. 双击「安装汉化插件.bat」
-2. 脚本会自动：关闭 Antigravity → 注入汉化 → 重新启动客户端
-3. 看到中文界面即安装成功
+v1.5.0 的安装器会「先自检、再留下」：
+  - 注入后会自动启动一次客户端做冒烟测试；
+  - 如果这个版本不兼容导致起不来，安装器会【自动还原官方版本】，
+    客户端仍然可以正常打开（不会出现「装了汉化就打不开」的情况）；
+  - 还原只接受与当前客户端版本一致的备份，避免把旧版文件还原到新客户端。
 
-二、客户端更新后汉化消失？
---------------------------
-正常现象。官方更新会用原版文件覆盖补丁。
-再双击一次「安装汉化插件.bat」即可恢复，词典和备份都还在。
+一、安装（约 20~40 秒）
+------------------------
+1. 解压本插件包到任意目录（路径建议不含特殊符号）
+2. 双击「安装汉化插件.bat」
+3. 脚本会自动：关闭 Antigravity → 注入汉化 → 自检并启动客户端
+4. 看到中文界面即安装成功；若提示「不兼容」，说明已自动还原，客户端不受影响。
+
+二、客户端更新后汉化消失？（这是正常的）
+----------------------------------------
+官方更新会替换 resources 目录，汉化必然消失。三种恢复方式任选：
+
+  A. 最快：双击「汉化并启动.bat」
+     检测到未汉化会自动重新注入，然后启动客户端（十几秒）。
+  B. 一劳永逸：双击「注册开机自动修复.bat」
+     之后每次登录系统都会自动检查并修复（客户端更新后无需手动操作）。
+     取消：双击「取消开机自动修复.bat」。
+  C. 双击「创建桌面快捷方式.bat」，以后从桌面「Antigravity 汉化版」图标启动，
+     它指向「汉化并启动.bat」，更新后会自动重新汉化。
 
 三、还原英文原版
 ----------------
-双击「还原官方原版.bat」。
+双击「还原官方原版.bat」。安装器会校验备份版本与当前客户端是否一致，
+版本不一致会拒绝还原（防止客户端打不开）；此时按提示先重装一次汉化即可刷新备份。
 
 官方原版备份保存在两个地方，客户端更新清掉一个也不怕：
-  - Antigravity\\resources\\app.asar.bak
-  - %USERPROFILE%\\.antigravity-zh\\backup\\app.asar.orig
+  - Antigravity\resources\app.asar.bak
+  - %USERPROFILE%\.antigravity-zh\backup\app.asar.orig
 
 四、自己加词条（可选）
 ----------------------
-改 %USERPROFILE%\\.antigravity-zh\\zh-CN.json 后保存，界面会自动重翻（无需重装）。
+改 %USERPROFILE%\.antigravity-zh\zh-CN.json 后保存，界面会自动重翻（无需重装）。
 
 五、macOS / Linux
 -----------------
     ./install-macos.sh      # 安装
     ./restore-macos.sh      # 还原
-需要系统自带 python3。
+    ./launch-macos.sh       # 汉化并启动（客户端更新后用）
+需要系统自带 python3（macOS/Linux 平台不做冒烟测试）。
 
-六、更多
---------
+六、出问题了？
+--------------
+- 安装日志：%USERPROFILE%\.antigravity-zh\logs\install-*.log
 - 翻译机制详解：docs/HOW_IT_WORKS.md
 - 项目主页：https://github.com/yunjuanyunshu114-byte/antigravity-zh-plugin
 - 非官方语言包，修改的是本地 app.asar，风险自负

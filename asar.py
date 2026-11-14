@@ -116,19 +116,22 @@ def _build_tree(src_dir):
     return header, file_list
 
 
-def pack(src_dir, dest_asar, unpack_patterns=None):
+def pack(src_dir, dest_asar, unpack_patterns=None, exact_unpack=None):
     """
     将 src_dir 打包为 dest_asar。
-    匹配 unpack_patterns（glob 列表）的文件写入 dest_asar.unpacked 目录，
-    header 中标记 unpacked: true 且 offset 为空。
+    匹配 unpack_patterns（glob 列表）或位于 exact_unpack（精确相对路径集合）中的文件
+    写入 dest_asar.unpacked 目录，header 中标记 unpacked: true 且 offset 为空。
+    exact_unpack 用于「保持原 asar 的 unpacked 集合不变」，避免新版本新增的
+    原生模块被错误打进 asar 导致 require 失败。
     """
     unpack_patterns = unpack_patterns or []
+    exact_unpack = exact_unpack or set()
     header, file_list = _build_tree(src_dir)
 
     unpacked_root = dest_asar + ".unpacked"
     current_offset = 0
     for fp, node, rel in file_list:
-        if _match_unpack(rel, unpack_patterns):
+        if rel in exact_unpack or _match_unpack(rel, unpack_patterns):
             node["unpacked"] = True
             # 内容写入 .unpacked 目录
             target = os.path.join(unpacked_root, rel)
@@ -251,7 +254,7 @@ def extract(asar_path, dest_dir, with_unpacked=True):
 
 def list_files(asar_path):
     """列出 asar 内所有文件（相对路径）。"""
-    header = _read_header(asar_path)
+    header, _json_size, _pickle_size = _read_header(asar_path)
     out = []
 
     def walk(node, rel):
@@ -273,6 +276,37 @@ def _copy_file(src, dst):
             if not chunk:
                 break
             fdst.write(chunk)
+
+
+
+def read_file(asar_path, relpath):
+    """从 asar 中读取单个文件内容（packed 从数据区读，unpacked 从同级 .unpacked 读）。"""
+    header, json_size, pickle_size = _read_header(asar_path)
+    parts = relpath.replace("\\", "/").strip("/").split("/")
+    node = header
+    for part in parts:
+        node = node.get("files", {}).get(part)
+        if node is None:
+            raise FileNotFoundError(relpath)
+    rel = "/".join(parts)
+    if node.get("unpacked"):
+        src = os.path.join(asar_path + ".unpacked", *parts)
+        if not os.path.exists(src):
+            raise FileNotFoundError(relpath)
+        with open(src, "rb") as f:
+            return f.read()
+    with open(asar_path, "rb") as f:
+        f.seek(_data_offset(pickle_size, node["offset"]))
+        return f.read(node["size"])
+
+
+def read_json(asar_path, relpath):
+    import json as _json
+    return _json.loads(read_file(asar_path, relpath).decode("utf-8"))
+
+
+def file_count(asar_path):
+    return len(list_files(asar_path))
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Antigravity 一键汉化（macOS / Linux）
+# v1.5.0：注入后自动启动；macOS/Linux 不执行冒烟测试（Windows 专有）
 set -uo pipefail
 cd "$(dirname "$0")"
 
@@ -7,14 +8,6 @@ echo "============================================"
 echo "  Antigravity 一键汉化"
 echo "============================================"
 
-echo "[1/3] 关闭 Antigravity ..."
-if [[ "$(uname)" == "Darwin" ]]; then
-  osascript -e 'quit app "Antigravity"' >/dev/null 2>&1 || true
-fi
-pkill -f "Antigravity" >/dev/null 2>&1 || true
-sleep 2
-
-echo "[2/3] 注入汉化补丁 ..."
 PY=""
 if command -v python3 >/dev/null 2>&1; then PY="python3";
 elif command -v python >/dev/null 2>&1; then PY="python";
@@ -23,16 +16,11 @@ else
   exit 1
 fi
 
-if ! "$PY" install.py "$@"; then
+echo "[*] 注入汉化（需要时自动备份官方原版）..."
+if ! "$PY" install.py --launch "$@"; then
   echo "[ERR] 安装失败，请查看上方错误信息。"
+  echo "      若提示备份版本不一致，请先重新运行本脚本生成当前版本备份。"
   exit 1
 fi
 
-echo "[3/3] 启动 Antigravity ..."
-if [[ "$(uname)" == "Darwin" ]]; then
-  open -a "Antigravity" >/dev/null 2>&1 || echo "[提示] 请手动启动 Antigravity。"
-else
-  (antigravity >/dev/null 2>&1 &) || echo "[提示] 请手动启动 Antigravity。"
-fi
-
-echo "完成！"
+echo "[OK] 完成。客户端更新后，运行 ./launch-macos.sh 或重新运行本脚本即可快速恢复汉化。"

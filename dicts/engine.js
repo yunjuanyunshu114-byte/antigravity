@@ -555,7 +555,7 @@
     // --- 插件市场卡片按钮 / 无障碍标签 ---
     [/^Install ([^!?,;:]{1,40})$/i, function (m, name) { return '安装 ' + translateCaptured(name); }],
     [/^Add ([^!?,;:]{1,30})$/i, function (m, name) { return '添加 ' + translateCaptured(name); }],
-    [/^Details for (.+)$/i, '$1 详情'],
+    [/^Details for (.+)$/i, function (m, name) { return translateCaptured(name) + ' 详情'; }],
     [/^Select Project(\s+(?:Ctrl|Cmd|Alt|Shift)\+[\w;:,/+ -]+)?$/i, '选择项目$1'],
     [/^Select Model(\s+(?:Ctrl|Cmd|Alt|Shift)\+[\w;:,/+ -]+)?$/i, '选择模型$1'],
     [/^Cancel\s*\(((?:Ctrl|Cmd|Alt|Shift)\+[\w+-]+)\)$/i, '取消 ($1)'],
@@ -615,7 +615,7 @@
     [/^scheduled tasks run as (.+?)\.?$/i, '计划任务均以 $1 模型运行。'],
     [/^(?:All |全部)?plugins run as (.+?)\.?$/i, '所有插件均以 $1 模型运行。'],
     [/^(?:All |全部)?automations run as (.+?)\.?$/i, '所有自动化任务均以 $1 模型运行。'],
-    [/^Review permissions for (.+)$/i, '审查 $1 的权限'],
+    [/^Review permissions for (.+)$/i, function (m, name) { return '审查 ' + translateCaptured(name) + ' 的权限'; }],
     [/^(.+) needs a few details from you before it can run\.$/i, '$1 运行前需要您补充几项详细信息。'],
     [/^Agents created by (.+) run in a dedicated (?:project|workspace) with its own permissions, which you can change anytime in the (?:project|workspace) settings page\.? On top of those defaults, (.+) requests the access below\.$/i, '由 $1 创建的智能体将在专属工作区中运行并拥有独立权限，您可以随时在设置页面中更改。除默认权限外，$2 还请求以下访问权限。'],
     [/^Agents created by (.+) run in a dedicated (?:project|workspace) with its own permissions, which you can change anytime in the (?:project|workspace) settings page\.?$/i, '由 $1 创建的智能体将在专属工作区中运行并拥有独立权限，您可以随时在设置页面中更改。'],
@@ -625,12 +625,22 @@
     [/^Send feedback as (.+)$/i, '以 $1 身份发送反馈'],
     [/^Models within this group:\s*(.*)$/i, '该分组包含的模型：$1'],
     [/^Select model,\s*current:\s*(.+)$/i, '选择模型，当前：$1'],
+    [/^Select project,\s*current:\s*(.+)$/i, '选择项目，当前：$1'],
+    // 文件卡片/表格按钮的无障碍标签（只用于 aria-label 场景）
+    [/^Open\s+(.+)$/i, function (m, name) { return '打开 ' + name; }],
+    // 语音选择器：「Fola, voice 1 of 9」
+    [/^(.+),\s*voice (\d+) of (\d+)$/i, function (m, name, i, n) { return name + '，第 ' + i + ' 个语音（共 ' + n + ' 个）'; }],
+    // 模型用量标签：「Gemini 4 Argon Weekly Limit」/「... 5-Hour Limit」
+    [/^(.+?)\s+(Weekly Limit|5-?Hour Limit)$/i, function (m, model, kind) {
+      const label = /^weekly/i.test(kind) ? '每周限额' : '5 小时限额';
+      return translateCaptured(model) + ' ' + label;
+    }],
     [/^(\d+) models selected$/i, '已选择 $1 个模型'],
     [/^Auth code for (.+)$/i, '$1 的授权码'],
     [/^The (.+) MCP server requires configuration parameters before it can be started\.?$/i, '$1 MCP 服务器需要先配置参数才能启动。'],
-    [/^See more in (.+)$/i, '在 $1 中查看更多'],
-    [/^See less in (.+)$/i, '在 $1 中收起'],
-    [/^(?:More actions|更多操作) for (.+)$/i, '$1 的更多操作'],
+    [/^See more in (.+)$/i, function (m, name) { return '在 ' + translateCaptured(name) + ' 中查看更多'; }],
+    [/^See less in (.+)$/i, function (m, name) { return '在 ' + translateCaptured(name) + ' 中收起'; }],
+    [/^(?:More actions|更多操作) for (.+)$/i, function (m, name) { return translateCaptured(name) + ' 的更多操作'; }],
     [/^(.+),\s*setup required$/i, '$1（需要配置）'],
     [/^Tool Definition:\s*(.+)$/i, '工具定义：$1'],
     [/^Invocation:\s*(.+)$/i, '调用：$1'],
@@ -653,7 +663,7 @@
     [/^showing\s+(\d+)\s+of\s+(\d+)$/i, '已显示 $1 / $2'],
     [/^Fold lines\s+(\d+)\s*-\s*(\d+)$/i, '折叠第 $1-$2 行'],
     [/^Run command:\s*(.+)$/i, '执行命令：$1'],
-    [/^Remove\s+(.{1,40})$/i, '移除 $1'],
+    [/^Remove\s+(.{1,40})$/i, function (m, name) { return '移除 ' + translateCaptured(name); }],
     // --- 吸收自 AntigravityCN 项目 ---
     [/^Thinking\s*\((.+)\)$/i, '正在思考（$1）'],
     [/^(\d+)\s+searches?$/i, '$1 次搜索'],
@@ -662,6 +672,13 @@
     [/^(\d+)\s+minutes?$/i, '$1 分钟'],
     [/^(\d+)\s+hours?$/i, '$1 小时'],
     [/^(\d+)\s+days?$/i, '$1 天'],
+    // 侧栏相对时间缩写（3d / 2h / 5m / 1w / 2mo / 1y），仅匹配「数字+单位」的整串
+    [/^(\d+)\s*d$/i, '$1 天'],
+    [/^(\d+)\s*h$/i, '$1 小时'],
+    [/^(\d+)\s*m$/i, '$1 分钟'],
+    [/^(\d+)\s*w$/i, '$1 周'],
+    [/^(\d+)\s*mo$/i, '$1 个月'],
+    [/^(\d+)\s*y$/i, '$1 年'],
     // --- 权限确认弹窗按钮（插入命令后的动态形式）---
     [/^Yes, and always allow '([\s\S]+)' in this conversation$/i, '是，且在此对话中始终允许 \'$1\''],
     [/^Yes, and always allow '([\s\S]+)' in this project$/i, '是，且在此项目中始终允许 \'$1\''],
@@ -721,16 +738,20 @@
     let dynamicMatch = trimmed;
     let isDynamic = false;
 
-    if (/^Worked for [\d smhd.]+$/.test(trimmed)) {
-      dynamicMatch = dynamicMatch.replace(/Worked for (.+)$/, function (_, d) {
-        return '已工作 ' + fmtDuration(d);
-      });
+    if (/^Worked for [\d smhd.]+(?:\s*·\s*\d+ updates?)?$/.test(trimmed)) {
+      dynamicMatch = dynamicMatch.replace(
+        /Worked for ([\d smhd.]+)(?:\s*·\s*(\d+) updates?)?$/,
+        function (_, d, n) {
+          return '已工作 ' + fmtDuration(d) + (n ? ' · ' + n + ' 次更新' : '');
+        });
       isDynamic = true;
     }
-    if (/^Thought for [\d smhd.]+$/.test(trimmed)) {
-      dynamicMatch = dynamicMatch.replace(/Thought for (.+)$/, function (_, d) {
-        return '已思考 ' + fmtDuration(d);
-      });
+    if (/^Thought for [\d smhd.]+(?:\s*·\s*\d+ updates?)?$/.test(trimmed)) {
+      dynamicMatch = dynamicMatch.replace(
+        /Thought for ([\d smhd.]+)(?:\s*·\s*(\d+) updates?)?$/,
+        function (_, d, n) {
+          return '已思考 ' + fmtDuration(d) + (n ? ' · ' + n + ' 次更新' : '');
+        });
       isDynamic = true;
     }
     if (/^Edited .* \+\d+ -\d+$/.test(trimmed)) {
@@ -974,6 +995,49 @@
     return true;
   }
 
+  // 自由文本区（模型回复/思考链/产物预览）里的文本不翻译，但里面的按钮 aria/title
+  // 仍是系统 UI，应当翻译；代码区则连属性一起跳过。
+  function attrAllowedInSkipRegion(element) {
+    try {
+      if (SKIP_TAGS[element.tagName]) return false;
+      const container = element.closest && element.closest(
+        '[data-testid="thinking-collapsible"],[data-testid="planner-response-text"],[data-testid="artifact-view"]'
+      );
+      if (!container) return false;
+      if (element.closest && element.closest(SKIP_SELECTOR)) return false;
+      let cur = element;
+      while (cur) {
+        if (SKIP_TAGS[cur.tagName]) return false;
+        if (cur.className && typeof cur.className === 'string') {
+          const lc = cur.className.toLowerCase();
+          if (lc.includes('code-line') || lc.includes('select-contain') || codeClassPattern.test(cur.className)) return false;
+        }
+        cur = cur.parentElement;
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function translateAttributes(node) {
+    let changed = false;
+    for (let ai = 0; ai < ATTR_NAMES.length; ai++) {
+      const attr = ATTR_NAMES[ai];
+      if (!node.hasAttribute(attr)) continue;
+      if (attr === 'value' && (node.tagName === 'INPUT' || node.tagName === 'TEXTAREA')) continue;
+      if (node.tagName === 'INPUT' && attr === 'value' && node.type !== 'button' && node.type !== 'submit') continue;
+      const original = node.getAttribute(attr);
+      if (!original) continue;
+      const translated = translateString(original);
+      if (translated !== original) {
+        node.setAttribute(attr, translated);
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
   function translateOne(node, priority) {
     if (!node || isDetached(node)) return;
     if (node.nodeType === Node.TEXT_NODE) {
@@ -988,17 +1052,9 @@
       return;
     }
     if (node.nodeType === Node.ELEMENT_NODE) {
-      if (shouldSkipNode(node)) return;
-      for (let ai = 0; ai < ATTR_NAMES.length; ai++) {
-        const attr = ATTR_NAMES[ai];
-        if (!node.hasAttribute(attr)) continue;
-        if (attr === 'value' && (node.tagName === 'INPUT' || node.tagName === 'TEXTAREA')) continue;
-        if (node.tagName === 'INPUT' && attr === 'value' && node.type !== 'button' && node.type !== 'submit') continue;
-        const original = node.getAttribute(attr);
-        if (!original) continue;
-        const translated = translateString(original);
-        if (translated !== original) node.setAttribute(attr, translated);
-      }
+      const skipped = shouldSkipNode(node);
+      if (skipped && !attrAllowedInSkipRegion(node)) return;
+      translateAttributes(node);
       if (node.shadowRoot) enqueueNode(node.shadowRoot, priority);
       for (let i = 0; i < node.childNodes.length; i++) enqueueNode(node.childNodes[i], priority);
       return;
